@@ -14,7 +14,12 @@ import java.util.Random;
  */
 public class Batalla {
 
-    /** Un paso narrado del combate, con un efecto visual opcional. */
+    /**
+     * Un paso narrado del combate. Guarda una "foto" del estado (qué criatura
+     * hay en cada lado y su vida en ese instante) para que la vista dibuje lo
+     * que corresponde a este mensaje y no el estado final del turno, que ya
+     * está calculado por adelantado.
+     */
     public static class Evento {
         public static final int NADA = 0;
         public static final int GOLPE_RIVAL = 1;    // el rival recibe un golpe
@@ -23,10 +28,19 @@ public class Batalla {
 
         public final String texto;
         public final int efecto;
+        public final Criatura jugador;
+        public final int hpJugador;
+        public final Criatura rival;
+        public final int hpRival;
 
-        public Evento(String texto, int efecto) {
+        public Evento(String texto, int efecto, Criatura jugador, int hpJugador,
+                      Criatura rival, int hpRival) {
             this.texto = texto;
             this.efecto = efecto;
+            this.jugador = jugador;
+            this.hpJugador = hpJugador;
+            this.rival = rival;
+            this.hpRival = hpRival;
         }
     }
 
@@ -62,10 +76,19 @@ public class Batalla {
         return true;
     }
 
+    /** Presentación al empezar el combate. */
+    public List<Evento> eventosIntro() {
+        List<Evento> eventos = new ArrayList<>();
+        eventos.add(ev("¡Un entrenador rival te desafía!", Evento.NADA));
+        eventos.add(ev("El rival envía a " + activaRival.nombre + ".", Evento.REFRESCO));
+        eventos.add(ev("¡Adelante, " + activaJugador.nombre + "!", Evento.REFRESCO));
+        return eventos;
+    }
+
     /** Turno completo: el jugador usa el movimiento de ese índice y el rival responde. */
     public List<Evento> ejecutarTurno(int indiceMovimiento) {
         List<Evento> eventos = new ArrayList<>();
-        Movimiento movJugador = movimientoOForcejeo(activaJugador, indiceMovimiento, eventos, activaJugador.nombre);
+        Movimiento movJugador = movimientoOForcejeo(activaJugador, indiceMovimiento);
         Movimiento movRival = elegirMovimientoIA();
 
         boolean jugadorPrimero =
@@ -92,9 +115,9 @@ public class Batalla {
     public List<Evento> cambioVoluntario(int indiceEquipo) {
         List<Evento> eventos = new ArrayList<>();
         Criatura entrante = equipoJugador.get(indiceEquipo);
-        eventos.add(new Evento("¡Vuelve, " + activaJugador.nombre + "!", Evento.NADA));
+        eventos.add(ev("¡Vuelve, " + activaJugador.nombre + "!", Evento.NADA));
         activaJugador = entrante;
-        eventos.add(new Evento("¡Adelante, " + entrante.nombre + "!", Evento.REFRESCO));
+        eventos.add(ev("¡Adelante, " + entrante.nombre + "!", Evento.REFRESCO));
 
         Movimiento movRival = elegirMovimientoIA();
         atacar(activaRival, activaJugador, movRival, false, eventos);
@@ -106,7 +129,7 @@ public class Batalla {
     public List<Evento> cambioTrasKO(int indiceEquipo) {
         List<Evento> eventos = new ArrayList<>();
         activaJugador = equipoJugador.get(indiceEquipo);
-        eventos.add(new Evento("¡Adelante, " + activaJugador.nombre + "!", Evento.REFRESCO));
+        eventos.add(ev("¡Adelante, " + activaJugador.nombre + "!", Evento.REFRESCO));
         return eventos;
     }
 
@@ -114,36 +137,45 @@ public class Batalla {
     // Lógica interna
     // ------------------------------------------------------------------
 
-    private Movimiento movimientoOForcejeo(Criatura c, int indice, List<Evento> eventos, String nombre) {
+    /** Crea un evento con la foto del estado actual (criaturas activas y su vida). */
+    private Evento ev(String texto, int efecto) {
+        return new Evento(texto, efecto,
+                activaJugador, activaJugador.hp, activaRival, activaRival.hp);
+    }
+
+    private Movimiento movimientoOForcejeo(Criatura c, int indice) {
         if (indice >= 0 && indice < c.movimientos.size()) {
             Movimiento m = c.movimientos.get(indice);
             if (m.tienePP()) return m;
         }
-        eventos.add(new Evento("¡A " + nombre + " no le quedan PP! Usará Forcejeo.", Evento.NADA));
         return forcejeo;
     }
 
     private void atacar(Criatura atacante, Criatura defensor, Movimiento mov,
                         boolean esJugador, List<Evento> eventos) {
-        if (mov != forcejeo) {
-            mov.pp--;
-        }
-
+        // El sufijo "enemigo" distingue los bandos cuando ambos usan la misma especie.
         String quien = esJugador ? atacante.nombre : atacante.nombre + " enemigo";
-        eventos.add(new Evento("¡" + quien + " usa " + mov.nombre + "!", Evento.NADA));
+        String quienDefensor = esJugador ? defensor.nombre + " enemigo" : defensor.nombre;
+
+        if (mov == forcejeo) {
+            eventos.add(ev("¡A " + quien + " no le quedan PP! ¡Usa Forcejeo!", Evento.NADA));
+        } else {
+            mov.pp--;
+            eventos.add(ev("¡" + quien + " usa " + mov.nombre + "!", Evento.NADA));
+        }
 
         if (mov.esCuracion) {
             int curado = atacante.curar(atacante.hpMax / 2);
             if (curado > 0) {
-                eventos.add(new Evento(atacante.nombre + " recupera " + curado + " PS.", Evento.REFRESCO));
+                eventos.add(ev(quien + " recupera " + curado + " PS.", Evento.REFRESCO));
             } else {
-                eventos.add(new Evento("Pero no tiene efecto...", Evento.NADA));
+                eventos.add(ev("Pero no tiene efecto...", Evento.NADA));
             }
             return;
         }
 
         if (rng.nextInt(100) >= mov.precision) {
-            eventos.add(new Evento("¡Pero el ataque falló!", Evento.NADA));
+            eventos.add(ev("¡Pero el ataque falló!", Evento.NADA));
             return;
         }
 
@@ -157,20 +189,20 @@ public class Batalla {
         int dano = Math.max(1, (int) (base * stab * efectividad * variacion * (critico ? 1.5 : 1.0)));
 
         defensor.recibirDano(dano);
-        eventos.add(new Evento(defensor.nombre + " pierde " + dano + " PS.",
+        eventos.add(ev(quienDefensor + " pierde " + dano + " PS.",
                 esJugador ? Evento.GOLPE_RIVAL : Evento.GOLPE_JUGADOR));
 
         if (critico) {
-            eventos.add(new Evento("¡Golpe crítico!", Evento.NADA));
+            eventos.add(ev("¡Golpe crítico!", Evento.NADA));
         }
         if (efectividad > 1.0) {
-            eventos.add(new Evento("¡Es muy eficaz!", Evento.NADA));
+            eventos.add(ev("¡Es muy eficaz!", Evento.NADA));
         } else if (efectividad < 1.0) {
-            eventos.add(new Evento("No es muy eficaz...", Evento.NADA));
+            eventos.add(ev("No es muy eficaz...", Evento.NADA));
         }
 
         if (defensor.estaDebilitada()) {
-            eventos.add(new Evento("¡" + defensor.nombre + " se debilitó!", Evento.REFRESCO));
+            eventos.add(ev("¡" + quienDefensor + " se debilitó!", Evento.REFRESCO));
         }
     }
 
@@ -192,7 +224,7 @@ public class Batalla {
         }
         if (mejor != null) {
             activaRival = mejor;
-            eventos.add(new Evento("¡El rival envía a " + mejor.nombre + "!", Evento.REFRESCO));
+            eventos.add(ev("¡El rival envía a " + mejor.nombre + "!", Evento.REFRESCO));
         }
     }
 

@@ -8,21 +8,27 @@ Juego de combates por turnos estilo Pokémon para Android, escrito en **Java pur
 
 ## Cómo compilarlo e instalarlo
 
-### Opción A: Android Studio (recomendada)
+### Opción A: instalar el APK ya hecho (lo más rápido)
+
+En la [última versión publicada](https://github.com/angel63652/combates-monstruo/releases/latest) hay un APK listo. Descárgalo en el móvil, ábrelo y acepta instalar apps de origen desconocido.
+
+### Opción B: Android Studio
 
 1. Abre Android Studio → **Open** → selecciona la carpeta `JuegoCombates`.
-2. Espera a que sincronice Gradle (descargará el wrapper automáticamente).
+2. Espera a que sincronice Gradle. El proyecto ya trae el *wrapper* incluido, así que Android Studio descarga solo la versión de Gradle correcta (8.7).
 3. Conecta tu móvil con la **depuración USB activada** (Ajustes → Opciones de desarrollador) y pulsa **Run ▶**.
 
-### Opción B: línea de comandos
+### Opción C: línea de comandos
 
-Con el SDK de Android y Gradle instalados:
+Con el SDK de Android instalado y la variable `ANDROID_HOME` (o un archivo `local.properties` con `sdk.dir`) apuntando a él, usa el *wrapper* del proyecto (no hace falta tener Gradle instalado):
 
 ```
 cd JuegoCombates
-gradle assembleDebug
+./gradlew assembleDebug        # en Windows: gradlew.bat assembleDebug
 adb install app/build/outputs/apk/debug/app-debug.apk
 ```
+
+El wrapper fija Gradle 8.7, la versión que necesita el plugin de Android (AGP 8.2.2).
 
 Requisitos: Android 7.0 (API 24) o superior.
 

@@ -8,7 +8,6 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -44,6 +43,11 @@ public class MainActivity extends Activity {
     private final List<Button> botonesMovimiento = new ArrayList<>();
     private Button botonEquipo;
     private Button botonNueva;
+
+    // Cerrojo: mientras hay una acción o animación en curso se ignora
+    // cualquier pulsación nueva (evita que dos toques a la vez, con dos dedos,
+    // lancen dos acciones en el mismo turno).
+    private boolean ocupado = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,14 +111,14 @@ public class MainActivity extends Activity {
         botonEquipo.setAllCaps(false);
         botonEquipo.setTextColor(Color.WHITE);
         estilizarBoton(botonEquipo, 0xFF5865F2);
-        botonEquipo.setOnClickListener(v -> abrirDialogoEquipo(false));
+        botonEquipo.setOnClickListener(v -> alPulsarEquipo());
 
         botonNueva = new Button(this);
         botonNueva.setText("Nueva batalla");
         botonNueva.setAllCaps(false);
         botonNueva.setTextColor(Color.WHITE);
         estilizarBoton(botonNueva, 0xFF6E7681);
-        botonNueva.setOnClickListener(v -> confirmarNuevaBatalla());
+        botonNueva.setOnClickListener(v -> alPulsarNueva());
 
         LinearLayout.LayoutParams lpMitad = new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.MATCH_PARENT, 1f);
@@ -149,29 +153,50 @@ public class MainActivity extends Activity {
     }
 
     // ------------------------------------------------------------------
+    // Cerrojo de acciones (una acción a la vez)
+    // ------------------------------------------------------------------
+
+    /** Intenta tomar el turno; devuelve false si ya hay algo en curso. */
+    private boolean tomarAccion() {
+        if (ocupado) return false;
+        ocupado = true;
+        habilitarControles(false);
+        return true;
+    }
+
+    /** Libera el cerrojo y devuelve el control al jugador. */
+    private void liberarAccion() {
+        ocupado = false;
+        habilitarControles(true);
+    }
+
+    // ------------------------------------------------------------------
     // Flujo del combate
     // ------------------------------------------------------------------
 
     private void iniciarBatalla() {
+        ocupado = true;
         batalla = new Batalla(Fabrica.equipoAleatorio(rng), Fabrica.equipoAleatorio(rng), rng);
         vistaBatalla.setBatalla(batalla);
         textoLog.setText("");
         actualizarBotones();
         habilitarControles(false);
-
-        List<Batalla.Evento> intro = new ArrayList<>();
-        intro.add(new Batalla.Evento("¡Un entrenador rival te desafía!", Batalla.Evento.NADA));
-        intro.add(new Batalla.Evento("El rival envía a " + batalla.activaRival.nombre + ".",
-                Batalla.Evento.REFRESCO));
-        intro.add(new Batalla.Evento("¡Adelante, " + batalla.activaJugador.nombre + "!",
-                Batalla.Evento.REFRESCO));
-        mostrarEventos(intro, this::finDeAccion);
+        mostrarEventos(batalla.eventosIntro(), this::finDeAccion);
     }
 
     private void alPulsarMovimiento(int indice) {
-        habilitarControles(false);
-        List<Batalla.Evento> eventos = batalla.ejecutarTurno(indice);
-        mostrarEventos(eventos, this::finDeAccion);
+        if (!tomarAccion()) return;
+        mostrarEventos(batalla.ejecutarTurno(indice), this::finDeAccion);
+    }
+
+    private void alPulsarEquipo() {
+        if (!tomarAccion()) return;
+        abrirDialogoEquipo(false);
+    }
+
+    private void alPulsarNueva() {
+        if (!tomarAccion()) return;
+        confirmarNuevaBatalla();
     }
 
     /** Muestra los eventos uno a uno con retardo, disparando animaciones. */
@@ -186,11 +211,7 @@ public class MainActivity extends Activity {
         }
         Batalla.Evento e = eventos.get(i);
         agregarLog(e.texto);
-        if (e.efecto == Batalla.Evento.GOLPE_RIVAL || e.efecto == Batalla.Evento.GOLPE_JUGADOR) {
-            vistaBatalla.animarGolpe(e.efecto);
-        } else {
-            vistaBatalla.invalidate();
-        }
+        vistaBatalla.mostrarEvento(e);
         handler.postDelayed(() -> mostrarEventoEn(eventos, i + 1, alTerminar), RETARDO_MENSAJE_MS);
     }
 
@@ -211,7 +232,7 @@ public class MainActivity extends Activity {
             abrirDialogoEquipo(true);
             return;
         }
-        habilitarControles(true);
+        liberarAccion();
     }
 
     private void agregarLog(String texto) {
@@ -273,7 +294,7 @@ public class MainActivity extends Activity {
         }
         if (indices.isEmpty()) {
             agregarLog("No tienes más criaturas disponibles.");
-            if (!esTrasKO) habilitarControles(true);
+            if (!esTrasKO) liberarAccion();
             return;
         }
 
@@ -281,7 +302,6 @@ public class MainActivity extends Activity {
                 .setTitle(esTrasKO ? "¡Elige tu siguiente criatura!" : "¿A quién envías?")
                 .setItems(etiquetas.toArray(new String[0]), (dialogo, pos) -> {
                     int indiceEquipo = indices.get(pos);
-                    habilitarControles(false);
                     List<Batalla.Evento> eventos = esTrasKO
                             ? batalla.cambioTrasKO(indiceEquipo)
                             : batalla.cambioVoluntario(indiceEquipo);
@@ -290,14 +310,13 @@ public class MainActivity extends Activity {
         if (esTrasKO) {
             builder.setCancelable(false);
         } else {
-            builder.setNegativeButton("Cancelar", (d, x) -> habilitarControles(true));
-            builder.setOnCancelListener(d -> habilitarControles(true));
+            builder.setNegativeButton("Cancelar", (d, x) -> liberarAccion());
+            builder.setOnCancelListener(d -> liberarAccion());
         }
         builder.show();
     }
 
     private void mostrarFin(boolean victoria) {
-        habilitarControles(false);
         new AlertDialog.Builder(this)
                 .setTitle(victoria ? "¡Victoria!" : "Derrota...")
                 .setMessage(victoria
@@ -313,7 +332,8 @@ public class MainActivity extends Activity {
                 .setTitle("Nueva batalla")
                 .setMessage("¿Abandonar este combate y empezar otro con equipos nuevos?")
                 .setPositiveButton("Sí", (d, x) -> iniciarBatalla())
-                .setNegativeButton("No", null)
+                .setNegativeButton("No", (d, x) -> liberarAccion())
+                .setOnCancelListener(d -> liberarAccion())
                 .show();
     }
 

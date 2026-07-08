@@ -19,6 +19,11 @@ import java.util.List;
 /**
  * Escenario del combate dibujado a mano con Canvas: cielo, hierba,
  * plataformas, las dos criaturas, paneles de vida y animación de golpe.
+ *
+ * La vista dibuja el estado del evento que se está narrando (la "foto" que
+ * trae cada Evento), no el estado final del turno. Así la sacudida y el
+ * destello de daño caen sobre la criatura correcta aunque el motor ya haya
+ * calculado el reemplazo del rival por adelantado.
  */
 public class VistaBatalla extends View {
 
@@ -34,6 +39,10 @@ public class VistaBatalla extends View {
     private long inicioGolpe = -1;
     private int objetivoGolpe = Batalla.Evento.NADA;
 
+    // Estado que se está dibujando (tomado del evento actual).
+    private Criatura dibJugador, dibRival;
+    private int hpDibJugador, hpDibRival;
+
     public VistaBatalla(Context context) {
         super(context);
         paintTexto.setColor(0xFF20232A);
@@ -41,13 +50,28 @@ public class VistaBatalla extends View {
 
     public void setBatalla(Batalla batalla) {
         this.batalla = batalla;
+        this.dibJugador = batalla.activaJugador;
+        this.hpDibJugador = batalla.activaJugador.hp;
+        this.dibRival = batalla.activaRival;
+        this.hpDibRival = batalla.activaRival.hp;
+        inicioGolpe = -1;
+        objetivoGolpe = Batalla.Evento.NADA;
         invalidate();
     }
 
-    /** Lanza la animación de sacudida sobre la criatura golpeada. */
-    public void animarGolpe(int objetivo) {
-        objetivoGolpe = objetivo;
-        inicioGolpe = SystemClock.uptimeMillis();
+    /**
+     * Muestra el estado de un evento: fija qué criaturas dibujar con su vida
+     * de ese instante y, si el evento es un golpe, lanza la sacudida.
+     */
+    public void mostrarEvento(Batalla.Evento e) {
+        this.dibJugador = e.jugador;
+        this.hpDibJugador = e.hpJugador;
+        this.dibRival = e.rival;
+        this.hpDibRival = e.hpRival;
+        if (e.efecto == Batalla.Evento.GOLPE_RIVAL || e.efecto == Batalla.Evento.GOLPE_JUGADOR) {
+            objetivoGolpe = e.efecto;
+            inicioGolpe = SystemClock.uptimeMillis();
+        }
         invalidate();
     }
 
@@ -66,15 +90,17 @@ public class VistaBatalla extends View {
         if (w == 0 || h == 0) return;
 
         // Fondo: cielo y hierba
-        paint.setShader(cielo);
-        canvas.drawRect(0, 0, w, h * 0.55f, paint);
-        paint.setShader(null);
+        if (cielo != null) {
+            paint.setShader(cielo);
+            canvas.drawRect(0, 0, w, h * 0.55f, paint);
+            paint.setShader(null);
+        }
         paint.setColor(0xFF7BBF6A);
         canvas.drawRect(0, h * 0.55f, w, h, paint);
         paint.setColor(0xFF6AAE59);
         canvas.drawRect(0, h * 0.55f, w, h * 0.60f, paint);
 
-        if (batalla == null) return;
+        if (batalla == null || dibJugador == null || dibRival == null) return;
 
         long transcurrido = (inicioGolpe < 0) ? Long.MAX_VALUE
                 : SystemClock.uptimeMillis() - inicioGolpe;
@@ -89,8 +115,8 @@ public class VistaBatalla extends View {
             if (objetivoGolpe == Batalla.Evento.GOLPE_JUGADOR) sacudidaJugador = onda;
         }
 
-        Criatura rival = batalla.activaRival;
-        Criatura jugador = batalla.activaJugador;
+        boolean golpeRival = animando && objetivoGolpe == Batalla.Evento.GOLPE_RIVAL;
+        boolean golpeJugador = animando && objetivoGolpe == Batalla.Evento.GOLPE_JUGADOR;
 
         // Plataformas
         paint.setColor(0x445B4A32);
@@ -99,27 +125,23 @@ public class VistaBatalla extends View {
         rect.set(w * 0.06f, h * 0.78f, w * 0.52f, h * 0.90f);
         canvas.drawOval(rect, paint);
 
-        // Criaturas
-        if (rival != null && !rival.estaDebilitada()) {
-            dibujarCriatura(canvas, rival,
-                    w * 0.735f + sacudidaRival, h * 0.32f, Math.min(w, h) * 0.115f,
-                    animando && objetivoGolpe == Batalla.Evento.GOLPE_RIVAL);
+        // Criaturas. Se dibuja mientras le quede vida; en el golpe que la
+        // debilita se sigue dibujando durante la sacudida para que el impacto
+        // sea visible antes de que desaparezca.
+        if (hpDibRival > 0 || golpeRival) {
+            dibujarCriatura(canvas, dibRival,
+                    w * 0.735f + sacudidaRival, h * 0.32f, Math.min(w, h) * 0.115f, golpeRival);
         }
-        if (jugador != null && !jugador.estaDebilitada()) {
-            dibujarCriatura(canvas, jugador,
-                    w * 0.29f + sacudidaJugador, h * 0.66f, Math.min(w, h) * 0.15f,
-                    animando && objetivoGolpe == Batalla.Evento.GOLPE_JUGADOR);
+        if (hpDibJugador > 0 || golpeJugador) {
+            dibujarCriatura(canvas, dibJugador,
+                    w * 0.29f + sacudidaJugador, h * 0.66f, Math.min(w, h) * 0.15f, golpeJugador);
         }
 
         // Paneles de información
-        if (rival != null) {
-            dibujarPanel(canvas, rival, batalla.equipoRival,
-                    w * 0.04f, h * 0.05f, w * 0.5f, false);
-        }
-        if (jugador != null) {
-            dibujarPanel(canvas, jugador, batalla.equipoJugador,
-                    w * 0.46f, h * 0.72f, w * 0.5f, true);
-        }
+        dibujarPanel(canvas, dibRival, hpDibRival, batalla.equipoRival,
+                w * 0.04f, h * 0.05f, w * 0.5f, false);
+        dibujarPanel(canvas, dibJugador, hpDibJugador, batalla.equipoJugador,
+                w * 0.46f, h * 0.72f, w * 0.5f, true);
 
         if (animando) {
             postInvalidateOnAnimation();
@@ -173,7 +195,7 @@ public class VistaBatalla extends View {
         }
     }
 
-    private void dibujarPanel(Canvas canvas, Criatura c, List<Criatura> equipo,
+    private void dibujarPanel(Canvas canvas, Criatura c, int hp, List<Criatura> equipo,
                               float x, float y, float ancho, boolean mostrarNumeros) {
         float alto = ancho * 0.42f;
         float radio = alto * 0.18f;
@@ -197,7 +219,7 @@ public class VistaBatalla extends View {
         float anchoNivel = paintTexto.measureText(nivel);
         canvas.drawText(nivel, x + ancho * 0.94f - anchoNivel, y + alto * 0.32f, paintTexto);
 
-        // Barra de vida
+        // Barra de vida (según la vida del evento que se narra)
         float bx = x + ancho * 0.06f;
         float by = y + alto * 0.45f;
         float bAncho = ancho * 0.88f;
@@ -206,7 +228,7 @@ public class VistaBatalla extends View {
         rect.set(bx, by, bx + bAncho, by + bAlto);
         canvas.drawRoundRect(rect, bAlto / 2, bAlto / 2, paint);
 
-        float f = c.fraccionVida();
+        float f = c.hpMax <= 0 ? 0f : (float) Math.max(0, hp) / (float) c.hpMax;
         if (f > 0f) {
             paint.setColor(f > 0.5f ? 0xFF34C759 : (f > 0.2f ? 0xFFF0A500 : 0xFFE0442E));
             rect.set(bx, by, bx + bAncho * f, by + bAlto);
@@ -217,7 +239,7 @@ public class VistaBatalla extends View {
         float baseInferior = y + alto * 0.88f;
         if (mostrarNumeros) {
             paintTexto.setTextSize(alto * 0.22f);
-            String ps = c.hp + " / " + c.hpMax + " PS";
+            String ps = Math.max(0, hp) + " / " + c.hpMax + " PS";
             float anchoPs = paintTexto.measureText(ps);
             canvas.drawText(ps, x + ancho * 0.94f - anchoPs, baseInferior, paintTexto);
         }
