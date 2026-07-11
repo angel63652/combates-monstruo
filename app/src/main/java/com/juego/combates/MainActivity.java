@@ -43,6 +43,7 @@ public class MainActivity extends Activity {
     private final List<Button> botonesMovimiento = new ArrayList<>();
     private Button botonEquipo;
     private Button botonNueva;
+    private AlertDialog dialogoActual;
 
     // Cerrojo: mientras hay una acción o animación en curso se ignora
     // cualquier pulsación nueva (evita que dos toques a la vez, con dos dedos,
@@ -313,11 +314,11 @@ public class MainActivity extends Activity {
             builder.setNegativeButton("Cancelar", (d, x) -> liberarAccion());
             builder.setOnCancelListener(d -> liberarAccion());
         }
-        builder.show();
+        dialogoActual = builder.show();
     }
 
     private void mostrarFin(boolean victoria) {
-        new AlertDialog.Builder(this)
+        dialogoActual = new AlertDialog.Builder(this)
                 .setTitle(victoria ? "¡Victoria!" : "Derrota...")
                 .setMessage(victoria
                         ? "¡Has derrotado al entrenador rival!"
@@ -328,7 +329,7 @@ public class MainActivity extends Activity {
     }
 
     private void confirmarNuevaBatalla() {
-        new AlertDialog.Builder(this)
+        dialogoActual = new AlertDialog.Builder(this)
                 .setTitle("Nueva batalla")
                 .setMessage("¿Abandonar este combate y empezar otro con equipos nuevos?")
                 .setPositiveButton("Sí", (d, x) -> iniciarBatalla())
@@ -341,5 +342,11 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         handler.removeCallbacksAndMessages(null);
+        // Cierra cualquier diálogo abierto para no filtrar la ventana si la
+        // Activity se destruye con él visible.
+        if (dialogoActual != null && dialogoActual.isShowing()) {
+            dialogoActual.dismiss();
+        }
+        dialogoActual = null;
     }
 }

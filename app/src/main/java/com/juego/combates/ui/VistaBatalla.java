@@ -244,12 +244,16 @@ public class VistaBatalla extends View {
             canvas.drawText(ps, x + ancho * 0.94f - anchoPs, baseInferior, paintTexto);
         }
 
-        // Puntos del equipo (criaturas restantes)
+        // Puntos del equipo (criaturas restantes). El punto de la criatura
+        // que se está dibujando respeta la foto del evento (su hp), no el
+        // estado final del turno; el resto de miembros usa su estado real
+        // (que no cambia mientras se narra el turno).
         float pr = alto * 0.07f;
         float px = x + ancho * 0.06f + pr;
         float py = baseInferior - pr;
         for (Criatura miembro : equipo) {
-            if (miembro.estaDebilitada()) {
+            boolean caido = (miembro == c) ? (hp <= 0) : miembro.estaDebilitada();
+            if (caido) {
                 paint.setStyle(Paint.Style.STROKE);
                 paint.setStrokeWidth(pr * 0.5f);
                 paint.setColor(0xFF9AA0A6);
