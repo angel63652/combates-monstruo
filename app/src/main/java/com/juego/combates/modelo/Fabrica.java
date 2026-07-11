@@ -20,6 +20,11 @@ public final class Fabrica {
     private Fabrica() {
     }
 
+    /** Nombres de todas las especies que el jugador puede elegir. */
+    public static String[] nombresEspecies() {
+        return ESPECIES.clone();
+    }
+
     public static Criatura crear(String especie) {
         switch (especie) {
             case "Fogarto":

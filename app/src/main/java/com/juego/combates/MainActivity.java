@@ -2,6 +2,7 @@ package com.juego.combates;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -31,6 +32,9 @@ import java.util.Random;
  */
 public class MainActivity extends Activity {
 
+    /** Clave del extra con las especies del equipo del jugador (String[]). */
+    public static final String EXTRA_EQUIPO = "com.juego.combates.EQUIPO";
+
     private static final long RETARDO_MENSAJE_MS = 700;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -44,6 +48,7 @@ public class MainActivity extends Activity {
     private Button botonEquipo;
     private Button botonNueva;
     private AlertDialog dialogoActual;
+    private String[] nombresEquipoJugador; // null = equipo al azar (combate rápido)
 
     // Cerrojo: mientras hay una acción o animación en curso se ignora
     // cualquier pulsación nueva (evita que dos toques a la vez, con dos dedos,
@@ -53,6 +58,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        nombresEquipoJugador = getIntent().getStringArrayExtra(EXTRA_EQUIPO);
         construirInterfaz();
         iniciarBatalla();
     }
@@ -177,12 +183,24 @@ public class MainActivity extends Activity {
 
     private void iniciarBatalla() {
         ocupado = true;
-        batalla = new Batalla(Fabrica.equipoAleatorio(rng), Fabrica.equipoAleatorio(rng), rng);
+        List<Criatura> equipoJugador =
+                (nombresEquipoJugador != null && nombresEquipoJugador.length > 0)
+                        ? equipoDesdeNombres(nombresEquipoJugador)
+                        : Fabrica.equipoAleatorio(rng);
+        batalla = new Batalla(equipoJugador, Fabrica.equipoAleatorio(rng), rng);
         vistaBatalla.setBatalla(batalla);
         textoLog.setText("");
         actualizarBotones();
         habilitarControles(false);
         mostrarEventos(batalla.eventosIntro(), this::finDeAccion);
+    }
+
+    private List<Criatura> equipoDesdeNombres(String[] nombres) {
+        List<Criatura> equipo = new ArrayList<>();
+        for (String nombre : nombres) {
+            equipo.add(Fabrica.crear(nombre));
+        }
+        return equipo;
     }
 
     private void alPulsarMovimiento(int indice) {
@@ -324,8 +342,22 @@ public class MainActivity extends Activity {
                         ? "¡Has derrotado al entrenador rival!"
                         : "Todas tus criaturas se han debilitado.")
                 .setCancelable(false)
-                .setPositiveButton("Nueva batalla", (d, x) -> iniciarBatalla())
+                .setPositiveButton("Otra vez", (d, x) -> iniciarBatalla())
+                .setNeutralButton("Cambiar equipo", (d, x) -> irASeleccion())
+                .setNegativeButton("Menú", (d, x) -> irAlMenu())
                 .show();
+    }
+
+    private void irAlMenu() {
+        startActivity(new Intent(this, MenuActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+        finish();
+    }
+
+    private void irASeleccion() {
+        startActivity(new Intent(this, SeleccionActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+        finish();
     }
 
     private void confirmarNuevaBatalla() {
