@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Colores de la interfaz. Cámbialos aquí y se aplican en todas las pantallas.
+  (Los colores de cada criatura están en Tipo.java, porque forman parte del
+  dibujo de cada monstruo.)
+-->
+<resources>
+    <!-- Fondos -->
+    <color name="fondo_oscuro">#FF20232A</color>
+    <color name="fondo_panel">#FF2B3038</color>
+    <color name="fondo_panel_borde">#FF3A4149</color>
+    <color name="menu_grad_arriba">#FF2B3A67</color>
+    <color name="menu_grad_abajo">#FF20232A</color>
+
+    <!-- Texto -->
+    <color name="texto_blanco">#FFFFFFFF</color>
+    <color name="texto_claro">#FFEDEFF2</color>
+    <color name="texto_tenue">#FFB6C0CC</color>
+    <color name="texto_gris">#FF8A93A0</color>
+    <color name="texto_pie">#FF7A8290</color>
+
+    <!-- Botones -->
+    <color name="boton_verde">#FF34A853</color>
+    <color name="boton_azul">#FF5865F2</color>
+    <color name="boton_gris">#FF6E7681</color>
+    <color name="boton_apagado">#FF3A4149</color>
+
+    <!-- Selección -->
+    <color name="seleccion_borde">#FF34C759</color>
+    <color name="seleccion_fondo">#FF2E3B31</color>
+    <color name="log_fondo">#FF2B3038</color>
+</resources>

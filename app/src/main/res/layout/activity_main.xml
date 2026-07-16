@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Pantalla de combate. El escenario (los monstruos, barras y animación) es
+  la vista VistaBatalla, que se dibuja por código con Canvas. El registro y
+  los botones sí son editables aquí en el diseñador.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/fondo_oscuro">
+
+    <com.juego.combates.ui.VistaBatalla
+        android:id="@+id/vista_batalla"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <ScrollView
+        android:id="@+id/scroll_log"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alto_log"
+        android:background="@color/log_fondo"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/texto_log"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/texto_claro"
+            android:textSize="15sp"
+            android:fontFamily="monospace" />
+    </ScrollView>
+
+    <!-- Fila 1 de movimientos -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alto_boton_mov"
+        android:orientation="horizontal"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp">
+
+        <Button
+            android:id="@+id/boton_mov_0"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_margin="4dp"
+            android:lines="2"
+            android:textColor="@color/texto_blanco"
+            android:textSize="14sp"
+            android:textAllCaps="false"
+            android:background="@drawable/boton_redondeado"
+            android:backgroundTint="@color/boton_gris" />
+
+        <Button
+            android:id="@+id/boton_mov_1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_margin="4dp"
+            android:lines="2"
+            android:textColor="@color/texto_blanco"
+            android:textSize="14sp"
+            android:textAllCaps="false"
+            android:background="@drawable/boton_redondeado"
+            android:backgroundTint="@color/boton_gris" />
+    </LinearLayout>
+
+    <!-- Fila 2 de movimientos -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alto_boton_mov"
+        android:orientation="horizontal"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp">
+
+        <Button
+            android:id="@+id/boton_mov_2"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_margin="4dp"
+            android:lines="2"
+            android:textColor="@color/texto_blanco"
+            android:textSize="14sp"
+            android:textAllCaps="false"
+            android:background="@drawable/boton_redondeado"
+            android:backgroundTint="@color/boton_gris" />
+
+        <Button
+            android:id="@+id/boton_mov_3"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_margin="4dp"
+            android:lines="2"
+            android:textColor="@color/texto_blanco"
+            android:textSize="14sp"
+            android:textAllCaps="false"
+            android:background="@drawable/boton_redondeado"
+            android:backgroundTint="@color/boton_gris" />
+    </LinearLayout>
+
+    <!-- Fila inferior: equipo y nueva batalla -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alto_boton"
+        android:orientation="horizontal"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp">
+
+        <Button
+            android:id="@+id/boton_equipo"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_margin="4dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/boton_equipo"
+            android:textColor="@color/texto_blanco"
+            android:textAllCaps="false"
+            android:background="@drawable/boton_redondeado"
+            android:backgroundTint="@color/boton_azul" />
+
+        <Button
+            android:id="@+id/boton_nueva"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_margin="4dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/boton_nueva"
+            android:textColor="@color/texto_blanco"
+            android:textAllCaps="false"
+            android:background="@drawable/boton_redondeado"
+            android:backgroundTint="@color/boton_gris" />
+    </LinearLayout>
+</LinearLayout>

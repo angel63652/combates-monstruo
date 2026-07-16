@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Medidas que se repiten. Cámbialas para ajustar tamaños de golpe. -->
+<resources>
+    <dimen name="margen">16dp</dimen>
+    <dimen name="alto_boton">60dp</dimen>
+    <dimen name="alto_boton_mov">64dp</dimen>
+    <dimen name="alto_log">110dp</dimen>
+    <dimen name="tam_criatura_menu">52dp</dimen>
+    <dimen name="tam_criatura_tarjeta">64dp</dimen>
+    <dimen name="radio">14dp</dimen>
+
+    <dimen name="texto_titulo">34sp</dimen>
+    <dimen name="texto_subtitulo">16sp</dimen>
+    <dimen name="texto_boton">17sp</dimen>
+    <dimen name="texto_nombre">19sp</dimen>
+    <dimen name="texto_normal">14sp</dimen>
+    <dimen name="texto_pequeno">13sp</dimen>
+</resources>

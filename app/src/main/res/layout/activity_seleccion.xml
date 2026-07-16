@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Pantalla de elegir equipo. La lista de criaturas la rellena
+  SeleccionActivity inflando item_criatura.xml una vez por criatura.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/fondo_oscuro">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/seleccion_titulo"
+        android:textColor="@color/texto_blanco"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="2dp" />
+
+    <TextView
+        android:id="@+id/contador"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/texto_tenue"
+        android:textSize="15sp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingBottom="12dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/lista"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:paddingBottom="12dp" />
+    </ScrollView>
+
+    <Button
+        android:id="@+id/boton_combatir"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alto_boton"
+        android:layout_margin="12dp"
+        android:text="@string/seleccion_combatir"
+        android:textColor="@color/texto_blanco"
+        android:textSize="18sp"
+        android:textAllCaps="false"
+        android:background="@drawable/boton_redondeado"
+        android:backgroundTint="@color/boton_apagado" />
+</LinearLayout>

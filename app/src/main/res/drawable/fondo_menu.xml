@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fondo degradado del menú (de arriba a abajo). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:startColor="@color/menu_grad_arriba"
+        android:endColor="@color/menu_grad_abajo" />
+</shape>

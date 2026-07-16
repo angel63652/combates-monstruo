@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Tarjeta de una criatura en la pantalla de selección: dibujo a la izquierda
+  y datos a la derecha. SeleccionActivity infla esta tarjeta 6 veces y
+  rellena los textos. El fondo cambia a tarjeta_seleccionada al elegirla.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="6dp"
+    android:padding="10dp"
+    android:background="@drawable/tarjeta">
+
+    <com.juego.combates.ui.VistaCriatura
+        android:id="@+id/vista_criatura"
+        android:layout_width="@dimen/tam_criatura_tarjeta"
+        android:layout_height="@dimen/tam_criatura_tarjeta" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginLeft="12dp">
+
+        <TextView
+            android:id="@+id/nombre"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/texto_blanco"
+            android:textSize="@dimen/texto_nombre"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tipo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/texto_normal"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/stats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FFCBD2D9"
+            android:textSize="@dimen/texto_pequeno" />
+
+        <TextView
+            android:id="@+id/movimientos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/texto_gris"
+            android:textSize="12sp" />
+    </LinearLayout>
+</LinearLayout>

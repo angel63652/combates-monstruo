@@ -48,6 +48,12 @@ public class VistaBatalla extends View {
         paintTexto.setColor(0xFF20232A);
     }
 
+    /** Constructor usado al inflar la vista desde un layout XML. */
+    public VistaBatalla(Context context, android.util.AttributeSet attrs) {
+        super(context, attrs);
+        paintTexto.setColor(0xFF20232A);
+    }
+
     public void setBatalla(Batalla batalla) {
         this.batalla = batalla;
         this.dibJugador = batalla.activaJugador;

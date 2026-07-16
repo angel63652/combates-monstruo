@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Todos los textos de la interfaz. Cámbialos aquí (o con el editor de
+  traducciones de Android Studio) y se actualizan en toda la app.
+-->
+<resources>
+    <string name="app_name">Combates Monstruo</string>
+
+    <!-- Menú -->
+    <string name="menu_subtitulo">Combates por turnos</string>
+    <string name="menu_elegir">Elegir equipo y combatir</string>
+    <string name="menu_rapido">Combate rápido (equipo al azar)</string>
+    <string name="menu_pie">Java · sin dependencias externas</string>
+
+    <!-- Selección de equipo -->
+    <string name="seleccion_titulo">Elige tu equipo</string>
+    <string name="seleccion_contador">Seleccionadas: %1$d / %2$d</string>
+    <string name="seleccion_combatir">¡Combatir!</string>
+    <string name="seleccion_tope">Ya tienes %1$d elegidas. Quita una primero.</string>
+    <string name="etiqueta_tipo">Tipo %1$s</string>
+    <string name="etiqueta_stats">PS %1$d · ATQ %2$d · DEF %3$d · VEL %4$d</string>
+
+    <!-- Combate -->
+    <string name="boton_equipo">Equipo</string>
+    <string name="boton_nueva">Nueva batalla</string>
+
+    <!-- Diálogos -->
+    <string name="dlg_equipo_titulo">¿A quién envías?</string>
+    <string name="dlg_equipo_ko_titulo">¡Elige tu siguiente criatura!</string>
+    <string name="dlg_cancelar">Cancelar</string>
+    <string name="dlg_sin_reservas">No tienes más criaturas disponibles.</string>
+
+    <string name="dlg_victoria_titulo">¡Victoria!</string>
+    <string name="dlg_victoria_msg">¡Has derrotado al entrenador rival!</string>
+    <string name="dlg_derrota_titulo">Derrota…</string>
+    <string name="dlg_derrota_msg">Todas tus criaturas se han debilitado.</string>
+    <string name="dlg_otra_vez">Otra vez</string>
+    <string name="dlg_cambiar_equipo">Cambiar equipo</string>
+    <string name="dlg_menu">Menú</string>
+
+    <string name="dlg_nueva_titulo">Nueva batalla</string>
+    <string name="dlg_nueva_msg">¿Abandonar este combate y empezar otro con equipos nuevos?</string>
+    <string name="dlg_si">Sí</string>
+    <string name="dlg_no">No</string>
+</resources>

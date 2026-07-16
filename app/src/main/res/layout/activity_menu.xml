@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Pantalla de inicio. Editable en el diseñador de Android Studio:
+  arrastra, cambia textos (@string/…) y colores (@color/…).
+  Las 6 criaturas de adorno se dibujan por código (les asigna el color
+  MenuActivity), pero puedes moverlas o quitarlas desde aquí.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:background="@drawable/fondo_menu"
+    android:paddingLeft="24dp"
+    android:paddingRight="24dp"
+    android:paddingTop="48dp"
+    android:paddingBottom="32dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textColor="@color/texto_blanco"
+        android:textSize="@dimen/texto_titulo"
+        android:textStyle="bold"
+        android:gravity="center" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/menu_subtitulo"
+        android:textColor="@color/texto_tenue"
+        android:textSize="@dimen/texto_subtitulo"
+        android:paddingTop="6dp"
+        android:paddingBottom="28dp" />
+
+    <LinearLayout
+        android:id="@+id/fila_criaturas"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="40dp">
+
+        <com.juego.combates.ui.VistaCriatura
+            android:id="@+id/criatura_0"
+            android:layout_width="@dimen/tam_criatura_menu"
+            android:layout_height="@dimen/tam_criatura_menu"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp" />
+
+        <com.juego.combates.ui.VistaCriatura
+            android:id="@+id/criatura_1"
+            android:layout_width="@dimen/tam_criatura_menu"
+            android:layout_height="@dimen/tam_criatura_menu"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp" />
+
+        <com.juego.combates.ui.VistaCriatura
+            android:id="@+id/criatura_2"
+            android:layout_width="@dimen/tam_criatura_menu"
+            android:layout_height="@dimen/tam_criatura_menu"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp" />
+
+        <com.juego.combates.ui.VistaCriatura
+            android:id="@+id/criatura_3"
+            android:layout_width="@dimen/tam_criatura_menu"
+            android:layout_height="@dimen/tam_criatura_menu"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp" />
+
+        <com.juego.combates.ui.VistaCriatura
+            android:id="@+id/criatura_4"
+            android:layout_width="@dimen/tam_criatura_menu"
+            android:layout_height="@dimen/tam_criatura_menu"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp" />
+
+        <com.juego.combates.ui.VistaCriatura
+            android:id="@+id/criatura_5"
+            android:layout_width="@dimen/tam_criatura_menu"
+            android:layout_height="@dimen/tam_criatura_menu"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/boton_elegir"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alto_boton"
+        android:layout_margin="8dp"
+        android:text="@string/menu_elegir"
+        android:textColor="@color/texto_blanco"
+        android:textSize="@dimen/texto_boton"
+        android:textAllCaps="false"
+        android:background="@drawable/boton_redondeado"
+        android:backgroundTint="@color/boton_verde" />
+
+    <Button
+        android:id="@+id/boton_rapido"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alto_boton"
+        android:layout_margin="8dp"
+        android:text="@string/menu_rapido"
+        android:textColor="@color/texto_blanco"
+        android:textSize="@dimen/texto_boton"
+        android:textAllCaps="false"
+        android:background="@drawable/boton_redondeado"
+        android:backgroundTint="@color/boton_azul" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/menu_pie"
+        android:textColor="@color/texto_pie"
+        android:textSize="@dimen/texto_pequeno" />
+</LinearLayout>

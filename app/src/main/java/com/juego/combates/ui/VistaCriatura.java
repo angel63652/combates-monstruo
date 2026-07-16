@@ -20,6 +20,11 @@ public class VistaCriatura extends View {
         super(context);
     }
 
+    /** Constructor usado al inflar la vista desde un layout XML. */
+    public VistaCriatura(Context context, android.util.AttributeSet attrs) {
+        super(context, attrs);
+    }
+
     public void setColor(int color) {
         this.color = color;
         invalidate();

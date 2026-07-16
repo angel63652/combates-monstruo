@@ -3,15 +3,12 @@ package com.juego.combates;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -26,9 +23,9 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Pantalla única del juego. Toda la interfaz se construye en Java puro:
- * arriba el escenario (Canvas), en medio el registro de combate y abajo
- * los botones de movimientos y de equipo.
+ * Pantalla de combate. La disposición está en res/layout/activity_main.xml
+ * (el escenario es la vista VistaBatalla, dibujada por código con Canvas).
+ * Aquí va el flujo del combate: turnos, mensajes y diálogos.
  */
 public class MainActivity extends Activity {
 
@@ -51,112 +48,41 @@ public class MainActivity extends Activity {
     private String[] nombresEquipoJugador; // null = equipo al azar (combate rápido)
 
     // Cerrojo: mientras hay una acción o animación en curso se ignora
-    // cualquier pulsación nueva (evita que dos toques a la vez, con dos dedos,
-    // lancen dos acciones en el mismo turno).
+    // cualquier pulsación nueva (evita que dos toques a la vez lancen dos
+    // acciones en el mismo turno).
     private boolean ocupado = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         nombresEquipoJugador = getIntent().getStringArrayExtra(EXTRA_EQUIPO);
-        construirInterfaz();
+        setContentView(R.layout.activity_main);
+        enlazarVistas();
         iniciarBatalla();
     }
 
-    // ------------------------------------------------------------------
-    // Construcción de la interfaz (sin XML)
-    // ------------------------------------------------------------------
+    /** Localiza las vistas del layout y engancha los botones. */
+    private void enlazarVistas() {
+        vistaBatalla = findViewById(R.id.vista_batalla);
+        scrollLog = findViewById(R.id.scroll_log);
+        textoLog = findViewById(R.id.texto_log);
 
-    private void construirInterfaz() {
-        LinearLayout raiz = new LinearLayout(this);
-        raiz.setOrientation(LinearLayout.VERTICAL);
-        raiz.setBackgroundColor(0xFF20232A);
-
-        // Escenario de batalla
-        vistaBatalla = new VistaBatalla(this);
-        raiz.addView(vistaBatalla, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
-
-        // Registro de combate
-        scrollLog = new ScrollView(this);
-        scrollLog.setBackgroundColor(0xFF2B3038);
-        scrollLog.setPadding(dp(12), dp(8), dp(12), dp(8));
-        textoLog = new TextView(this);
-        textoLog.setTextColor(0xFFEDEFF2);
-        textoLog.setTextSize(15f);
-        textoLog.setTypeface(Typeface.MONOSPACE);
-        scrollLog.addView(textoLog);
-        raiz.addView(scrollLog, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dp(110)));
-
-        // Botones de movimientos (2 x 2)
-        LinearLayout fila1 = filaHorizontal();
-        LinearLayout fila2 = filaHorizontal();
-        for (int i = 0; i < 4; i++) {
-            Button b = new Button(this);
-            b.setTextColor(Color.WHITE);
-            b.setAllCaps(false);
-            b.setTextSize(14f);
-            b.setLines(2);
+        int[] idsMov = {R.id.boton_mov_0, R.id.boton_mov_1, R.id.boton_mov_2, R.id.boton_mov_3};
+        for (int i = 0; i < idsMov.length; i++) {
+            Button b = findViewById(idsMov[i]);
             final int indice = i;
             b.setOnClickListener(v -> alPulsarMovimiento(indice));
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                    0, LinearLayout.LayoutParams.MATCH_PARENT, 1f);
-            lp.setMargins(dp(4), dp(4), dp(4), dp(4));
-            (i < 2 ? fila1 : fila2).addView(b, lp);
             botonesMovimiento.add(b);
         }
-        raiz.addView(fila1, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dp(64)));
-        raiz.addView(fila2, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dp(64)));
 
-        // Fila inferior: cambio de criatura y nueva batalla
-        LinearLayout fila3 = filaHorizontal();
-        botonEquipo = new Button(this);
-        botonEquipo.setText("Equipo");
-        botonEquipo.setAllCaps(false);
-        botonEquipo.setTextColor(Color.WHITE);
-        estilizarBoton(botonEquipo, 0xFF5865F2);
+        botonEquipo = findViewById(R.id.boton_equipo);
         botonEquipo.setOnClickListener(v -> alPulsarEquipo());
-
-        botonNueva = new Button(this);
-        botonNueva.setText("Nueva batalla");
-        botonNueva.setAllCaps(false);
-        botonNueva.setTextColor(Color.WHITE);
-        estilizarBoton(botonNueva, 0xFF6E7681);
+        botonNueva = findViewById(R.id.boton_nueva);
         botonNueva.setOnClickListener(v -> alPulsarNueva());
-
-        LinearLayout.LayoutParams lpMitad = new LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.MATCH_PARENT, 1f);
-        lpMitad.setMargins(dp(4), dp(4), dp(4), dp(8));
-        fila3.addView(botonEquipo, lpMitad);
-        LinearLayout.LayoutParams lpMitad2 = new LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.MATCH_PARENT, 1f);
-        lpMitad2.setMargins(dp(4), dp(4), dp(4), dp(8));
-        fila3.addView(botonNueva, lpMitad2);
-        raiz.addView(fila3, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dp(56)));
-
-        setContentView(raiz);
     }
 
-    private LinearLayout filaHorizontal() {
-        LinearLayout fila = new LinearLayout(this);
-        fila.setOrientation(LinearLayout.HORIZONTAL);
-        fila.setPadding(dp(4), 0, dp(4), 0);
-        return fila;
-    }
-
-    private void estilizarBoton(Button b, int color) {
-        GradientDrawable fondo = new GradientDrawable();
-        fondo.setColor(color);
-        fondo.setCornerRadius(dp(10));
-        b.setBackground(fondo);
-    }
-
-    private int dp(float valor) {
-        return (int) (valor * getResources().getDisplayMetrics().density + 0.5f);
+    private void tintar(Button b, int color) {
+        b.setBackgroundTintList(ColorStateList.valueOf(color));
     }
 
     // ------------------------------------------------------------------
@@ -271,7 +197,7 @@ public class MainActivity extends Activity {
                 Movimiento m = activa.movimientos.get(i);
                 b.setVisibility(View.VISIBLE);
                 b.setText(m.nombre + "\n" + m.tipo.nombre + " · PP " + m.pp + "/" + m.ppMax);
-                estilizarBoton(b, m.tienePP() ? m.tipo.color : 0xFF555B63);
+                tintar(b, m.tienePP() ? m.tipo.color : 0xFF555B63);
                 b.setTag(m.tienePP() || sinPP); // pulsable si tiene PP, o Forcejeo si no queda nada
             } else {
                 b.setVisibility(View.INVISIBLE);
@@ -281,7 +207,7 @@ public class MainActivity extends Activity {
         if (sinPP && !activa.movimientos.isEmpty()) {
             Button b = botonesMovimiento.get(0);
             b.setText("Forcejeo\nNormal · sin PP");
-            estilizarBoton(b, 0xFF9AA0A6);
+            tintar(b, 0xFF9AA0A6);
         }
     }
 
@@ -312,13 +238,15 @@ public class MainActivity extends Activity {
             etiquetas.add(c.nombre + "  (" + c.tipo.nombre + ")  " + c.hp + "/" + c.hpMax + " PS");
         }
         if (indices.isEmpty()) {
-            agregarLog("No tienes más criaturas disponibles.");
+            agregarLog(getString(R.string.dlg_sin_reservas));
             if (!esTrasKO) liberarAccion();
             return;
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
-                .setTitle(esTrasKO ? "¡Elige tu siguiente criatura!" : "¿A quién envías?")
+                .setTitle(esTrasKO
+                        ? getString(R.string.dlg_equipo_ko_titulo)
+                        : getString(R.string.dlg_equipo_titulo))
                 .setItems(etiquetas.toArray(new String[0]), (dialogo, pos) -> {
                     int indiceEquipo = indices.get(pos);
                     List<Batalla.Evento> eventos = esTrasKO
@@ -329,7 +257,7 @@ public class MainActivity extends Activity {
         if (esTrasKO) {
             builder.setCancelable(false);
         } else {
-            builder.setNegativeButton("Cancelar", (d, x) -> liberarAccion());
+            builder.setNegativeButton(getString(R.string.dlg_cancelar), (d, x) -> liberarAccion());
             builder.setOnCancelListener(d -> liberarAccion());
         }
         dialogoActual = builder.show();
@@ -337,14 +265,16 @@ public class MainActivity extends Activity {
 
     private void mostrarFin(boolean victoria) {
         dialogoActual = new AlertDialog.Builder(this)
-                .setTitle(victoria ? "¡Victoria!" : "Derrota...")
+                .setTitle(victoria
+                        ? getString(R.string.dlg_victoria_titulo)
+                        : getString(R.string.dlg_derrota_titulo))
                 .setMessage(victoria
-                        ? "¡Has derrotado al entrenador rival!"
-                        : "Todas tus criaturas se han debilitado.")
+                        ? getString(R.string.dlg_victoria_msg)
+                        : getString(R.string.dlg_derrota_msg))
                 .setCancelable(false)
-                .setPositiveButton("Otra vez", (d, x) -> iniciarBatalla())
-                .setNeutralButton("Cambiar equipo", (d, x) -> irASeleccion())
-                .setNegativeButton("Menú", (d, x) -> irAlMenu())
+                .setPositiveButton(getString(R.string.dlg_otra_vez), (d, x) -> iniciarBatalla())
+                .setNeutralButton(getString(R.string.dlg_cambiar_equipo), (d, x) -> irASeleccion())
+                .setNegativeButton(getString(R.string.dlg_menu), (d, x) -> irAlMenu())
                 .show();
     }
 
@@ -362,10 +292,10 @@ public class MainActivity extends Activity {
 
     private void confirmarNuevaBatalla() {
         dialogoActual = new AlertDialog.Builder(this)
-                .setTitle("Nueva batalla")
-                .setMessage("¿Abandonar este combate y empezar otro con equipos nuevos?")
-                .setPositiveButton("Sí", (d, x) -> iniciarBatalla())
-                .setNegativeButton("No", (d, x) -> liberarAccion())
+                .setTitle(getString(R.string.dlg_nueva_titulo))
+                .setMessage(getString(R.string.dlg_nueva_msg))
+                .setPositiveButton(getString(R.string.dlg_si), (d, x) -> iniciarBatalla())
+                .setNegativeButton(getString(R.string.dlg_no), (d, x) -> liberarAccion())
                 .setOnCancelListener(d -> liberarAccion())
                 .show();
     }
